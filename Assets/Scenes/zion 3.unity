@@ -961,6 +961,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   delay: 2
   actionSpeed: 0
+  exitCollider: {fileID: 0}
   targetRenderer: {fileID: 182271224}
   newSprite: {fileID: 21300000, guid: e0ae4d4ea9064b44d8d4ced2596052d0, type: 3}
   useRotation: 0
@@ -5190,6 +5191,7 @@ MonoBehaviour:
   SceneName: zion 3
   NextLevelTitel: {fileID: 2021584896}
   StartLoad: 0
+  fadeImage: {fileID: 0}
 --- !u!61 &1017330633
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -6636,6 +6638,9 @@ MonoBehaviour:
   V: 0
   up: 0
   JumpSound: {fileID: 0}
+  mainCam: {fileID: 0}
+  cameraOffsetX: 5
+  cameraSmoothTime: 3
 --- !u!50 &1419318160
 Rigidbody2D:
   serializedVersion: 5
@@ -8113,6 +8118,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   delay: 3.1
   actionSpeed: 2
+  exitCollider: {fileID: 0}
   targetRenderer: {fileID: 0}
   newSprite: {fileID: 0}
   useRotation: 1
@@ -8799,6 +8805,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   delay: 0.5
   actionSpeed: 2
+  exitCollider: {fileID: 0}
   targetRenderer: {fileID: 0}
   newSprite: {fileID: 0}
   useRotation: 0
@@ -10165,6 +10172,9 @@ MonoBehaviour:
   V: 0
   up: 0
   JumpSound: {fileID: 298166368}
+  mainCam: {fileID: 0}
+  cameraOffsetX: 5
+  cameraSmoothTime: 3
 --- !u!50 &2094412039
 Rigidbody2D:
   serializedVersion: 5
@@ -10223,12 +10233,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerHPslider: {fileID: 519920536}
+  FailTitle: {fileID: 1630897462}
   CurrentHP: 100
   MaxHP: 100
   isDead: 0
-  FailTitle: {fileID: 1630897462}
   simplePlayer: {fileID: 2094412038}
-  sceneName: zion
+  heat: {fileID: 0}
 --- !u!114 &2094412042
 MonoBehaviour:
   m_ObjectHideFlags: 0
