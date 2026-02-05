@@ -5,24 +5,31 @@ using UnityEngine.UI;
 
 
 public class Health : MonoBehaviour
+
 {
+    [Header("UI Elements")]
     public Slider PlayerHPslider;
+    public GameObject FailTitle;
+    [Header("Health Settings")]
     public int CurrentHP = 100;
     public int MaxHP = 100;
     public bool isDead = false;
-    public GameObject FailTitle;
+    [Header("Reference & Audio")]
     public SimplePlayer simplePlayer;
-    public string sceneName;
     public AudioSource heat;
     private void Start()
     {
         PlayerHPslider.maxValue = MaxHP;
         FailTitle.SetActive(false);
-        
+
     }
     public void DamgerHP(int damage)
     {
-        if(heat != null)
+        if (isDead)
+        {
+            return;
+        }
+        if (heat != null)
         {
             heat.Play();
         }
@@ -50,8 +57,10 @@ public class Health : MonoBehaviour
     {
         FailTitle.SetActive(true);
         simplePlayer.enabled = false;
-        yield return new WaitForSeconds(3f);
-        SceneManager.LoadScene("zion 2");
+        yield return new WaitForSeconds(1.5f);
+        // get the current scene name and reload it
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(currentSceneName);
         yield break;
 
     }

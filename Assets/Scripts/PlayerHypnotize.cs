@@ -121,6 +121,10 @@ public class PlayerHypnotize : MonoBehaviour
     {
         if (!isWaitingForEnemy) 
         {
+            if(currentTarget != null)
+            {
+                currentTarget.UpdateHypnosisProgress(0);
+            }
             holdTimer = 0f;
             currentTarget = null;
         }
