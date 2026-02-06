@@ -2133,7 +2133,7 @@ Transform:
   m_GameObject: {fileID: 437971945}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10, y: -3.04, z: 0}
+  m_LocalPosition: {x: -33.25, y: -3.04, z: 0}
   m_LocalScale: {x: 1.1, y: 1.1, z: 1.1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -2193,7 +2193,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 437971945}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b05b92a869c181d40bddd8d71faa495a, type: 3}
   m_Name: 
@@ -2354,7 +2354,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2
-  patrolDistance: 3.7
+  patrolDistance: 4.74
   moveRightFirst: 1
   useFloating: 1
   floatAmplitude: 0.15
@@ -5579,7 +5579,7 @@ Transform:
   m_GameObject: {fileID: 1157035611}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 22.23, y: 1.19, z: -10}
+  m_LocalPosition: {x: 15.49, y: 1.19, z: -10}
   m_LocalScale: {x: 0.31, y: 0.31, z: 0.31}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10173,8 +10173,8 @@ MonoBehaviour:
   up: 0
   JumpSound: {fileID: 298166368}
   mainCam: {fileID: 0}
-  cameraOffsetX: 5
-  cameraSmoothTime: 3
+  cameraOffsetX: 5.64
+  cameraSmoothTime: -1
 --- !u!50 &2094412039
 Rigidbody2D:
   serializedVersion: 5
