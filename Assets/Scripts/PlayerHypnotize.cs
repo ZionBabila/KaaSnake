@@ -6,7 +6,8 @@ public class PlayerHypnotize : MonoBehaviour
 {
     // Global variable accessible from any script via PlayerHypnotize.IsHypnotizing
     public static bool IsHypnotizing { get; private set; }
-
+    private Animator playerAnim;
+    private SimplePlayer playerMovement;
     [Header("Detection Settings")]
     public float agroRange = 10f;
     public Transform playerCastPoint;
@@ -25,6 +26,11 @@ public class PlayerHypnotize : MonoBehaviour
     private HypnotizableEntity currentTarget;
     private Coroutine fadeCoroutine;
 
+    void Awake()
+    {
+        playerAnim = GetComponentInParent<Animator>();
+        playerMovement = GetComponent<SimplePlayer>();
+    }
     void Update()
     {
         if (promptText == null) return;
@@ -46,8 +52,8 @@ public class PlayerHypnotize : MonoBehaviour
         {
             if (currentTarget.isActionCompleted)
             {
-                promptText.gameObject.SetActive(true);
-                promptText.text = "Target is Hypnotized";
+                //promptText.gameObject.SetActive(true);
+                //promptText.text = "Target is Hypnotized";
                 IsHypnotizing = false; // Action is already done
                 return;
             }
@@ -76,6 +82,10 @@ public class PlayerHypnotize : MonoBehaviour
             }
             IsHypnotizing = false;
             ClearAll();
+        }
+        if(playerAnim != null)
+        {
+            playerAnim.SetBool("isHypnotizing", IsHypnotizing);
         }
     }
 
@@ -143,8 +153,8 @@ public class PlayerHypnotize : MonoBehaviour
         
         if (promptText != null) 
         {
-            promptText.gameObject.SetActive(true);
-            promptText.text = "SUCCESS!";
+            //promptText.gameObject.SetActive(true);
+            //promptText.text = "SUCCESS!";
         }
         currentTarget = null;
     }
@@ -181,21 +191,73 @@ public class PlayerHypnotize : MonoBehaviour
         fadeCoroutine = null;
     }
 
-    private bool VisualizeAndCheckLine()
+private float lastFacingDir = 1f;
+
+private bool VisualizeAndCheckLine()
+{
+    if (playerCastPoint == null) return false;
+
+    // בדיקה 1: האם הסקריפט מוצא את השחקן?
+    if (playerMovement == null)
     {
-        if (playerCastPoint == null) return false;
+        playerMovement = GetComponentInParent<SimplePlayer>();
+        if (playerMovement == null)
+        {
+            Debug.LogError("Hypnotize Script: SimplePlayer not found on Parent!");
+            return false;
+        }
+    }
 
-        Vector2 endPos = (Vector2)playerCastPoint.position + (Vector2)playerCastPoint.right * agroRange;
-        RaycastHit2D hit = Physics2D.Linecast(playerCastPoint.position, endPos, detectionLayer);
-        
-        bool hitEnemy = hit.collider != null && hit.collider.CompareTag("enemy_eye");
+    // בדיקה 2: האם המשתנה V מתעדכן?
+    if (playerMovement.V > 0.01f) lastFacingDir = 1f;
+    else if (playerMovement.V < -0.01f) lastFacingDir = -1f;
 
-        if (hitEnemy)
+    Vector2 direction = new Vector2(lastFacingDir, 0);
+    Vector2 endPos = (Vector2)playerCastPoint.position + direction * agroRange;
+
+    // בדיקה 3: האם הקרן פוגעת במשהו?
+    // השתמשנו ב-RaycastAll כדי לוודא שאנחנו לא נתקעים על הקוליידר של השחקן עצמו
+    RaycastHit2D[] hits = Physics2D.RaycastAll(playerCastPoint.position, direction, agroRange, detectionLayer);
+    
+    bool hitEnemy = false;
+    foreach (var hit in hits)
+    {
+        // התעלמות מהקוליידר של השחקן (אם הוא באותה שכבה)
+        if (hit.collider.gameObject.transform.root == transform.root) continue;
+
+        if (hit.collider.CompareTag("enemy_eye"))
         {
             currentTarget = hit.collider.GetComponentInParent<HypnotizableEntity>();
+            hitEnemy = true;
+            break; // מצאנו אויב, אפשר לעצור
         }
-
-        Debug.DrawLine(playerCastPoint.position, endPos, hitEnemy ? Color.green : Color.red);
-        return hitEnemy;
     }
+
+    // ציור הקרן ב-Scene View
+    Debug.DrawLine(playerCastPoint.position, endPos, hitEnemy ? Color.green : Color.red);
+    
+    return hitEnemy;
+}
+private void OnDrawGizmos()
+{
+    // 1. Safety check: stop if we don't have a point to start from
+    if (playerCastPoint == null) return;
+
+    // 2. Determine the direction for the Gizmo
+    // If the game is running, use lastFacingDir. If not, default to Right.
+    float dir = (Application.isPlaying) ? lastFacingDir : 1f;
+    Vector3 direction = new Vector3(dir, 0, 0);
+
+    // 3. Set the Gizmo color (Yellow is common for detection)
+    Gizmos.color = Color.yellow;
+
+    // 4. Draw the line representing the ray
+    Vector3 startPos = playerCastPoint.position;
+    Vector3 endPos = startPos + (direction * agroRange);
+    Gizmos.DrawLine(startPos, endPos);
+
+    // 5. Draw a small wire sphere at the tip to visualize the maximum range
+    Gizmos.color = Color.cyan;
+    Gizmos.DrawWireSphere(endPos, 0.2f);
+}
 }

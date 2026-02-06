@@ -1,3 +1,5 @@
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using Image = UnityEngine.UI.Image;
@@ -16,6 +18,9 @@ public class PlayerDetect : MonoBehaviour
     public TMPro.TMP_Text numberAppleText;
     public UnityEvent OnTrophyCollected;
     public Health health;
+    [Header("Fail Settings")]
+    public float failDelay = 1f; // Time to wait before respawning after hitting a bush
+    public GameObject failMessageUI; // UI element to show when the player fails
     private void Start()
     {
          
@@ -46,11 +51,27 @@ public class PlayerDetect : MonoBehaviour
 
         if (collision.CompareTag("bush") == true)
         {
-            health.DamgerHP(40);
-            player.transform.position = StartPoint.position;
-            failSound.Play();
-            failCount += 1;
+            StartCoroutine(HandleBushFail());
         }
 
     }
+    private IEnumerator HandleBushFail()
+{
+    // 1. Show the fail message
+    if (failMessageUI != null) failMessageUI.SetActive(true);
+
+    // 2. Play the sound immediately
+    if (failSound != null) failSound.Play();
+
+    // 3. Wait for the specified delay
+    yield return new WaitForSeconds(failDelay);
+
+    // 4. Teleport the player and update stats
+    player.transform.position = StartPoint.position;
+    health.DamgerHP(40);
+    failCount += 1;
+
+    // 5. Hide the message again
+    if (failMessageUI != null) failMessageUI.SetActive(false);
+}
 }
