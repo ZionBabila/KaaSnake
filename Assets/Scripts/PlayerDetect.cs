@@ -6,54 +6,56 @@ using UnityEngine.Events;
 [System.Serializable]
 public struct HazardType
 {
-    public string tag;      
-    public int damage;      
+    public string tag;
+    public int damage;
     public Color hitColor;
-    
+
     [Header("Behavior Settings")]
     public bool respawnPlayer;   // TRUE = Teleport to start. FALSE = Just damage.
     public bool isContinuous;    // TRUE = Damage repeats (Fire). FALSE = One hit (Spike).
     public float damageInterval; // Time between hits (e.g., 1.0s)
-    
-    public AudioClip hitSound;   
+
+    public AudioClip hitSound;
 }
 
 public class PlayerDetect : MonoBehaviour
 {
     [Header("Game References")]
-    public GameObject playerRoot; 
+    public GameObject playerRoot;
     public Transform StartPoint;
     public Health health;
+    public PlayerHypnotize hypnoScript; // Reference to the Hypnotize Script
     public TMPro.TMP_Text numberAppleText;
-    
+
     [Header("Audio")]
     public AudioSource collectSound;
     public AudioSource trophySound;
-    public AudioSource failSound; 
+    public AudioSource failSound;
 
     [Header("Collection Settings")]
     public int countApple = 0;
     public UnityEvent OnTrophyCollected;
 
     [Header("Enemy & Hazards Settings")]
-    public List<HazardType> hazards = new List<HazardType>(); 
-    
+    public List<HazardType> hazards = new List<HazardType>();
+
     [Header("Fail Feedback Settings")]
-    public float failDelay = 1f; 
-    public float flashDuration = 0.2f; 
-    public GameObject failMessageUI; 
-    
+    public float failDelay = 1f;
+    public float flashDuration = 0.2f;
+    public GameObject failMessageUI;
+
     private SpriteRenderer playerSprite;
     private Rigidbody2D playerRb;
     private SimplePlayer movementScript;
-    
-    private bool isDead = false; 
-    
-    // --- NEW: Timer for continuous damage ---
-    private float nextDamageTime = 0f; 
+
+    private bool isDead = false;
+
+    // --- Timer for continuous damage ---
+    private float nextDamageTime = 0f;
 
     private void Start()
     {
+        // Try to find components on Parent first
         movementScript = GetComponentInParent<SimplePlayer>();
 
         if (movementScript != null)
@@ -69,7 +71,23 @@ public class PlayerDetect : MonoBehaviour
             playerRoot = transform.parent != null ? transform.parent.gameObject : gameObject;
         }
 
-        if (playerRb == null) Debug.LogError("PlayerDetect: Could not find Rigidbody2D on Parent!");
+        // --- Hypnosis Script Connection ---
+        if (hypnoScript == null)
+        {
+            // Try to find it automatically if not assigned
+            hypnoScript = GetComponentInParent<PlayerHypnotize>();
+        }
+
+        if (hypnoScript != null)
+        {
+            Debug.Log("[PlayerDetect] Hypnosis Script Connected Successfully.");
+        }
+        else
+        {
+            Debug.LogError("[PlayerDetect] Hypnosis Script NOT FOUND! Gold Apples won't work.");
+        }
+
+        if (playerRb == null) Debug.LogError("[PlayerDetect] Could not find Rigidbody2D on Parent!");
     }
 
     private void Update()
@@ -83,29 +101,49 @@ public class PlayerDetect : MonoBehaviour
     // --- 1. ENTER TRIGGER (Items + One Time Hits) ---
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (isDead) return; 
+        if (isDead) return;
 
-        // Apple Collection
+        // --- Normal Apple Collection ---
         if (collision.CompareTag("apple"))
         {
-            if(health) health.HealHP(20);
+            if (health) health.HealHP(20);
             collision.gameObject.SetActive(false);
-            if(collectSound) collectSound.Play();
+            if (collectSound) collectSound.Play();
             countApple++;
             return;
         }
 
-        // Trophy Collection
+        // --- Gold Apple Collection (Hypnosis Power) ---
+        if (collision.CompareTag("goldApple"))
+        {
+            Debug.Log("[PlayerDetect] Collided with Gold Apple!");
+
+            if (hypnoScript != null)
+            {
+                Debug.Log("[PlayerDetect] Sending AddHypnoPower(50) command...");
+                hypnoScript.AddHypnoPower(50f);
+            }
+            else
+            {
+                Debug.LogError("[PlayerDetect] Cannot add power - HypnoScript is missing!");
+            }
+
+            collision.gameObject.SetActive(false);
+            if (collectSound) collectSound.Play();
+            return;
+        }
+
+        // --- Trophy Collection ---
         if (collision.CompareTag("trophy"))
         {
             collision.gameObject.SetActive(false);
             countApple += 5;
-            if(trophySound) trophySound.Play();
+            if (trophySound) trophySound.Play();
             if (OnTrophyCollected != null) OnTrophyCollected.Invoke();
             return;
         }
 
-        // Check for ONE-TIME Hazards (Spikes / Bullets)
+        // --- Check for ONE-TIME Hazards (Spikes / Bullets) ---
         foreach (HazardType hazard in hazards)
         {
             if (collision.CompareTag(hazard.tag))
@@ -115,7 +153,7 @@ public class PlayerDetect : MonoBehaviour
                 {
                     StartCoroutine(HandleOneTimeHit(hazard));
                 }
-                return; 
+                return;
             }
         }
     }
@@ -157,7 +195,7 @@ public class PlayerDetect : MonoBehaviour
     // --- LOGIC: ONE TIME HIT ---
     private IEnumerator HandleOneTimeHit(HazardType hazardData)
     {
-        isDead = true; 
+        isDead = true;
 
         PlayHazardSound(hazardData);
 
@@ -165,7 +203,7 @@ public class PlayerDetect : MonoBehaviour
         if (playerSprite != null)
         {
             originalColor = playerSprite.color;
-            playerSprite.color = hazardData.hitColor; 
+            playerSprite.color = hazardData.hitColor;
         }
 
         if (health != null) health.DamgerHP(hazardData.damage);
@@ -174,10 +212,10 @@ public class PlayerDetect : MonoBehaviour
         {
             // Respawn Sequence
             if (movementScript != null) movementScript.canMove = false;
-            if (playerRb != null) 
+            if (playerRb != null)
             {
-                playerRb.linearVelocity = Vector2.zero; 
-                playerRb.simulated = false; 
+                playerRb.linearVelocity = Vector2.zero; // Note: In newer Unity versions, use velocity instead of linearVelocity if error occurs
+                playerRb.simulated = false;
             }
 
             if (failMessageUI != null) failMessageUI.SetActive(true);
@@ -187,7 +225,7 @@ public class PlayerDetect : MonoBehaviour
                 playerRoot.transform.position = StartPoint.position;
 
             if (failMessageUI != null) failMessageUI.SetActive(false);
-            if (playerRb != null) playerRb.simulated = true; 
+            if (playerRb != null) playerRb.simulated = true;
             if (movementScript != null) movementScript.canMove = true;
         }
         else
@@ -197,7 +235,7 @@ public class PlayerDetect : MonoBehaviour
         }
 
         if (playerSprite != null) playerSprite.color = originalColor;
-        isDead = false; 
+        isDead = false;
     }
 
     // --- LOGIC: CONTINUOUS TICK (Single damage burst) ---
@@ -205,7 +243,7 @@ public class PlayerDetect : MonoBehaviour
     {
         // 1. Deal Damage
         if (health != null) health.DamgerHP(hazardData.damage);
-        
+
         // 2. Play Sound
         PlayHazardSound(hazardData);
 
@@ -213,7 +251,7 @@ public class PlayerDetect : MonoBehaviour
         if (playerSprite != null) playerSprite.color = hazardData.hitColor;
 
         // 4. Wait briefly (flash length)
-        yield return new WaitForSeconds(0.2f); 
+        yield return new WaitForSeconds(0.2f);
 
         // 5. Flash Color OFF
         if (playerSprite != null) playerSprite.color = Color.white;
@@ -221,7 +259,7 @@ public class PlayerDetect : MonoBehaviour
 
     private void PlayHazardSound(HazardType data)
     {
-        if (data.hitSound != null) failSound.PlayOneShot(data.hitSound); 
+        if (data.hitSound != null) failSound.PlayOneShot(data.hitSound);
         else if (failSound != null) failSound.Play();
     }
 }

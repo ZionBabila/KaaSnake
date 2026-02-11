@@ -6,41 +6,45 @@ public class HypnotizableEntity : MonoBehaviour
 {
     [Header("Hypnosis Stats")]
     public string entityName = "Enemy";
-    public float requiredTime = 2.0f; 
+    public float requiredTime = 2.0f;
     public bool isActionCompleted = false;
 
     [Header("Repeatable Settings")]
-    public bool isRepeatable = true; 
-    public float recoveryTime = 5.0f; 
+    public bool isRepeatable = true;
+    public float recoveryTime = 5.0f;
 
     [Header("Animator Parameters")]
-    public string tryingBool = "isHypnoProcess";    
-    public string completedBool = "isFullyHypnotized"; 
+    public string tryingBool = "isHypnoProcess";
+    public string completedBool = "isFullyHypnotized";
 
     // --- New Settings for Tag and Layer Switching ---
     [Header("Neutral State Settings")]
     [Tooltip("If checked, the enemy's Tag and Layer will change when hypnotized so it won't hurt the player.")]
     public bool changeFactionOnHypnosis = false; // Default is false for safety
-    public string neutralLayerName = "Default"; 
-    public string neutralTagName = "Untagged";  
-    
+    public string neutralLayerName = "Default";
+    public string neutralTagName = "Untagged";
+    [Header("Loot / Bonus")]
+    public GameObject BonusObject;
+    [Header("ToolTip Settings(XYZ)")]
+public Vector3 tooltipOffset = new Vector3(0, 1f, 0);
     // Variables to store the original state
     private string originalTag;
     private int originalLayer;
 
     [Header("Events")]
-    public UnityEvent OnHypnosisSuccess; 
-    public UnityEvent OnRecovery;        
+    public UnityEvent OnHypnosisSuccess;
+    public UnityEvent OnRecovery;
 
     private Animator anim;
 
     void Awake()
     {
         anim = GetComponent<Animator>();
-        
+
         // Save the original Tag and Layer at the start so we can restore them later
         originalTag = gameObject.tag;
         originalLayer = gameObject.layer;
+       
     }
 
     public void UpdateHypnosisProgress(float progressPercent)
@@ -64,14 +68,18 @@ public class HypnotizableEntity : MonoBehaviour
     private void FinishHypnosis()
     {
         isActionCompleted = true;
-        SetAnimatorStates(false, true); 
-        
+        SetAnimatorStates(false, true);
+
         // --- Change Tag and Layer (Only if checked in Inspector) ---
         if (changeFactionOnHypnosis)
         {
             SetNeutralState(true);
         }
-
+        if (BonusObject != null)
+        {
+            Vector3 finalSpawnPos = transform.position + tooltipOffset;
+            Instantiate(BonusObject, finalSpawnPos, Quaternion.identity);
+        }
         if (OnHypnosisSuccess != null)
             OnHypnosisSuccess.Invoke();
 
@@ -87,8 +95,8 @@ public class HypnotizableEntity : MonoBehaviour
     {
         yield return new WaitForSeconds(recoveryTime);
 
-        isActionCompleted = false; 
-        SetAnimatorStates(false, false); 
+        isActionCompleted = false;
+        SetAnimatorStates(false, false);
 
         // --- Restore original Tag and Layer (Only if checked) ---
         if (changeFactionOnHypnosis)
@@ -109,9 +117,9 @@ public class HypnotizableEntity : MonoBehaviour
         {
             // Switch to Neutral/Safe Mode
             gameObject.tag = neutralTagName;
-            
+
             int layerIndex = LayerMask.NameToLayer(neutralLayerName);
-            if (layerIndex != -1) 
+            if (layerIndex != -1)
                 gameObject.layer = layerIndex;
             else
                 Debug.LogWarning($"Layer '{neutralLayerName}' does not exist! Check spelling.");
@@ -135,5 +143,11 @@ public class HypnotizableEntity : MonoBehaviour
     {
         Gizmos.color = isActionCompleted ? Color.green : Color.yellow;
         Gizmos.DrawWireSphere(transform.position + Vector3.up * 2f, 0.3f);
+        if(BonusObject != null)
+        {
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawWireSphere(transform.position + tooltipOffset, 0.2f);
+            Gizmos.DrawLine(transform.position, transform.position + tooltipOffset);
+        }
     }
 }
