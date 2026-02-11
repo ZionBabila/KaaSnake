@@ -7,9 +7,13 @@ public class WorldTrigger : MonoBehaviour
     public float delay = 0.5f;
     public float actionSpeed = 2.0f;
 
-    [Header("New: Exit Logic (Optional)")]
-    // Drag the collider that triggers the level transition here
+    [Header("Exit Logic (Turns ON)")]
+    // הקוליידר הזה יידלק בסוף הפעולה (למשל טריגר שמעביר שלב)
     public Collider2D exitCollider; 
+
+    [Header("Blocker Logic (Turns OFF)")]
+    // *** חדש: גרור לכאן את הקיר הבלתי נראה שאתה רוצה להעלים ***
+    public Collider2D blockingCollider; 
 
     [Header("Visual Swap (Optional)")]
     public SpriteRenderer targetRenderer;
@@ -31,10 +35,16 @@ public class WorldTrigger : MonoBehaviour
 
     private void Awake()
     {
-        // Ensure the exit collider is disabled at the start of the level
+        // 1. מוודאים שהיציאה כבויה בהתחלה
         if (exitCollider != null)
         {
             exitCollider.enabled = false;
+        }
+
+        // 2. מוודאים שהחוסם (הקיר) דלוק בהתחלה
+        if (blockingCollider != null)
+        {
+            blockingCollider.enabled = true;
         }
     }
 
@@ -63,7 +73,15 @@ public class WorldTrigger : MonoBehaviour
             targetRenderer.sprite = newSprite;
         }
 
-        // 4. Movement and Rotation Logic
+        // 4. Disable Blocker (Make the invisible wall disappear)
+        // *** כאן הקיר הבלתי נראה נעלם ***
+        if (blockingCollider != null)
+        {
+            blockingCollider.enabled = false;
+            Debug.Log("Blocking collider disabled!");
+        }
+
+        // 5. Movement and Rotation Logic
         if (useRotation || usePosition)
         {
             float t = 0;
@@ -88,7 +106,7 @@ public class WorldTrigger : MonoBehaviour
             if (usePosition) transform.localPosition = targetPosition;
         }
 
-        // 5. New: Enable the transition collider after movement is done
+        // 6. Enable the exit transition collider
         if (exitCollider != null)
         {
             exitCollider.enabled = true;
