@@ -10,6 +10,8 @@ TagManager:
   - bush
   - enemy_eye
   - Ground
+  - smallHit
+  - bigHit
   layers:
   - Default
   - TransparentFX

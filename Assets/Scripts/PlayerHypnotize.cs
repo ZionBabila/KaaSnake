@@ -195,9 +195,10 @@ private float lastFacingDir = 1f;
 
 private bool VisualizeAndCheckLine()
 {
+    //safty check to prevent null reference errors in the editor when playerCastPoint is not assigned
     if (playerCastPoint == null) return false;
 
-    // בדיקה 1: האם הסקריפט מוצא את השחקן?
+//sagety check to ensure we have a reference to the player's movement script, which contains the facing direction
     if (playerMovement == null)
     {
         playerMovement = GetComponentInParent<SimplePlayer>();
@@ -215,14 +216,14 @@ private bool VisualizeAndCheckLine()
     Vector2 direction = new Vector2(lastFacingDir, 0);
     Vector2 endPos = (Vector2)playerCastPoint.position + direction * agroRange;
 
-    // בדיקה 3: האם הקרן פוגעת במשהו?
-    // השתמשנו ב-RaycastAll כדי לוודא שאנחנו לא נתקעים על הקוליידר של השחקן עצמו
+    // check for hits using RaycastAll to detect mulitple colliders in the line (like the enemy's body and eye)
     RaycastHit2D[] hits = Physics2D.RaycastAll(playerCastPoint.position, direction, agroRange, detectionLayer);
     
     bool hitEnemy = false;
+    // Loop through all hits to find the first valid enemy eye collider
     foreach (var hit in hits)
     {
-        // התעלמות מהקוליידר של השחקן (אם הוא באותה שכבה)
+        // ignore self-collisions by checking if the hit collider's root object is the same as the player's root object
         if (hit.collider.gameObject.transform.root == transform.root) continue;
 
         if (hit.collider.CompareTag("enemy_eye"))

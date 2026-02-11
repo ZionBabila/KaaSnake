@@ -1,15 +1,18 @@
 fileFormatVersion: 2
-guid: f61d9d45f03a7ba4983f7e64c9a4d912
+guid: 78f00b6b190b9ea47b8c4f6e11272c2d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1611970466183296693
-    second: Layer 4_0
+      213: -4707433008916192419
+    second: woodandroop_0
+  - first:
+      213: -4565938370000402001
+    second: woodandroop_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 0
+    enableMipMap: 1
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -46,7 +49,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -56,7 +59,7 @@ TextureImporter:
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
-  spriteTessellationDetail: 0
+  spriteTessellationDetail: -1
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
@@ -113,69 +116,55 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Layer 4_0
+      name: woodandroop_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 489
-        height: 185
+        x: 344
+        y: 1193
+        width: 293
+        height: 144
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5b6b641399ede5610800000000000000
-      internalID: 1611970466183296693
+      spriteID: d532a939e96dbaeb0800000000000000
+      internalID: -4707433008916192419
       vertices: []
       indices: 
       edges: []
       weights: []
-    outline:
-    - - {x: 244.5, y: -74.5}
-      - {x: 244.5, y: -13.5}
-      - {x: 241.5, y: -3.5}
-      - {x: 163.5, y: 47.5}
-      - {x: 131.5, y: 49.5}
-      - {x: 118.5, y: 41.5}
-      - {x: 115.5, y: 38.5}
-      - {x: 115.5, y: 36.5}
-      - {x: 114.5, y: 47.5}
-      - {x: 121.5, y: 46.5}
-      - {x: 127.5, y: 55.5}
-      - {x: 118.5, y: 73.5}
-      - {x: 94.5, y: 77.5}
-      - {x: 82.5, y: 67.5}
-      - {x: 77.5, y: 51.5}
-      - {x: 85.5, y: 47.5}
-      - {x: 62.5, y: 58.5}
-      - {x: 58.5, y: 68.5}
-      - {x: 21.5, y: 87.5}
-      - {x: -30.5, y: 90.5}
-      - {x: -70.5, y: 78.5}
-      - {x: -75.5, y: 71.5}
-      - {x: -77.55095, y: 71.06052}
-      - {x: -79.5, y: 92.5}
-      - {x: -149.5, y: 92.5}
-      - {x: -144.5, y: 79.5}
-      - {x: -140.5, y: 72.5}
-      - {x: -187.5, y: 80.5}
-      - {x: -218.5, y: 71.5}
-      - {x: -244.5, y: -2.5}
-      - {x: -244.5, y: -70.5}
-      - {x: -170.5, y: -92.5}
-      - {x: 139.5, y: -92.5}
-    - - {x: -150.7, y: 53.100006}
-      - {x: -150.5, y: 53.5}
-      - {x: -149.5, y: 52.5}
+    - serializedVersion: 2
+      name: woodandroop_1
+      rect:
+        serializedVersion: 2
+        x: 833
+        y: 1301
+        width: 17
+        height: 158
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa9cccd6e3782a0c0800000000000000
+      internalID: -4565938370000402001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
-    internalID: 1537655665
+    spriteID: 3b165d08502008644b6a8afcbeffcce4
+    internalID: 0
     vertices: []
     indices: 
     edges: []
@@ -184,7 +173,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Layer 4_0: 1611970466183296693
+      woodandroop_0: -4707433008916192419
+      woodandroop_1: -4565938370000402001
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

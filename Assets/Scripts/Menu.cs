@@ -2,23 +2,41 @@ using UnityEngine;
 
 public class Menu : MonoBehaviour
 {
-public GameObject MenuCanvas;
+    [Header("Settings")]
+    public bool openOnStart = true; // Set to true if you want the menu to open automatically when the game starts
 
+    [Header("Reference")]
+    public GameObject MenuCanvas;
 
-private void Start()
+    private void Start()
     {
-        OpenMenu();
+        if (openOnStart)
+        {
+            OpenMenu();
+        }
+        else
+        {
+            CloseMenu();
+        }
     }
-public void OpenMenu()
+    public void OpenMenu()
     {
-        MenuCanvas.SetActive(true);
-        Time.timeScale = 0f;
+        if (MenuCanvas != null)
+        {
+            MenuCanvas.SetActive(true);
+            Time.timeScale = 0f; // Pause the game           
+        }
+
     }
 
     public void CloseMenu()
     {
-        MenuCanvas.SetActive(false);
-        Time.timeScale = 1f;
+        if (MenuCanvas != null)
+        {
+            MenuCanvas.SetActive(false);
+            Time.timeScale = 1f;
+        }
+
     }
     public void OnQuit()
     {

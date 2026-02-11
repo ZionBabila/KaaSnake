@@ -6641,6 +6641,7 @@ MonoBehaviour:
   mainCam: {fileID: 0}
   cameraOffsetX: 5
   cameraSmoothTime: 3
+  canMove: 1
 --- !u!50 &1419318160
 Rigidbody2D:
   serializedVersion: 5
@@ -7559,6 +7560,8 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   health: {fileID: 2094412041}
+  failDelay: 1
+  failMessageUI: {fileID: 0}
 --- !u!1 &1614174486
 GameObject:
   m_ObjectHideFlags: 0
@@ -9228,6 +9231,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d4bce25390fd444185b002229d3d6ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  openOnStart: 0
   MenuCanvas: {fileID: 1859166551}
 --- !u!4 &1912874205
 Transform:
@@ -10175,6 +10179,7 @@ MonoBehaviour:
   mainCam: {fileID: 0}
   cameraOffsetX: 5.64
   cameraSmoothTime: -1
+  canMove: 1
 --- !u!50 &2094412039
 Rigidbody2D:
   serializedVersion: 5

@@ -1,30 +1,77 @@
 using System.Collections;
-using Unity.VisualScripting;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using Image = UnityEngine.UI.Image;
+
+[System.Serializable]
+public struct HazardType
+{
+    public string tag;      
+    public int damage;      
+    public Color hitColor;
+    
+    [Header("Behavior Settings")]
+    public bool respawnPlayer;   // TRUE = Teleport to start. FALSE = Just damage.
+    public bool isContinuous;    // TRUE = Damage repeats (Fire). FALSE = One hit (Spike).
+    public float damageInterval; // Time between hits (e.g., 1.0s)
+    
+    public AudioClip hitSound;   
+}
 
 public class PlayerDetect : MonoBehaviour
 {
-
-    public int countApple = 0;
-    public GameObject tree;
+    [Header("Game References")]
+    public GameObject playerRoot; 
     public Transform StartPoint;
-    public GameObject player;
+    public Health health;
+    public TMPro.TMP_Text numberAppleText;
+    
+    [Header("Audio")]
     public AudioSource collectSound;
     public AudioSource trophySound;
-    public AudioSource failSound;
-    public int failCount = 0;
-    public TMPro.TMP_Text numberAppleText;
+    public AudioSource failSound; 
+
+    [Header("Collection Settings")]
+    public int countApple = 0;
     public UnityEvent OnTrophyCollected;
-    public Health health;
-    [Header("Fail Settings")]
-    public float failDelay = 1f; // Time to wait before respawning after hitting a bush
-    public GameObject failMessageUI; // UI element to show when the player fails
+
+    [Header("Enemy & Hazards Settings")]
+    public List<HazardType> hazards = new List<HazardType>(); 
+    
+    [Header("Fail Feedback Settings")]
+    public float failDelay = 1f; 
+    public float flashDuration = 0.2f; 
+    public GameObject failMessageUI; 
+    
+    private SpriteRenderer playerSprite;
+    private Rigidbody2D playerRb;
+    private SimplePlayer movementScript;
+    
+    private bool isDead = false; 
+    
+    // --- NEW: Timer for continuous damage ---
+    private float nextDamageTime = 0f; 
+
     private void Start()
     {
-         
+        movementScript = GetComponentInParent<SimplePlayer>();
+
+        if (movementScript != null)
+        {
+            playerRb = movementScript.GetComponent<Rigidbody2D>();
+            playerSprite = movementScript.GetComponentInChildren<SpriteRenderer>();
+            playerRoot = movementScript.gameObject;
+        }
+        else
+        {
+            playerRb = GetComponentInParent<Rigidbody2D>();
+            playerSprite = GetComponentInChildren<SpriteRenderer>();
+            playerRoot = transform.parent != null ? transform.parent.gameObject : gameObject;
+        }
+
+        if (playerRb == null) Debug.LogError("PlayerDetect: Could not find Rigidbody2D on Parent!");
     }
+
     private void Update()
     {
         if (numberAppleText != null)
@@ -32,46 +79,149 @@ public class PlayerDetect : MonoBehaviour
             numberAppleText.text = countApple.ToString();
         }
     }
+
+    // --- 1. ENTER TRIGGER (Items + One Time Hits) ---
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("apple") == true)
+        if (isDead) return; 
+
+        // Apple Collection
+        if (collision.CompareTag("apple"))
         {
-            health.HealHP(20);
+            if(health) health.HealHP(20);
             collision.gameObject.SetActive(false);
-            collectSound.Play();
-            countApple = countApple + 1;
+            if(collectSound) collectSound.Play();
+            countApple++;
+            return;
         }
-        if (collision.CompareTag("trophy") == true)
+
+        // Trophy Collection
+        if (collision.CompareTag("trophy"))
         {
             collision.gameObject.SetActive(false);
-            countApple = countApple + 5;
-            trophySound.Play();
+            countApple += 5;
+            if(trophySound) trophySound.Play();
             if (OnTrophyCollected != null) OnTrophyCollected.Invoke();
+            return;
         }
 
-        if (collision.CompareTag("bush") == true)
+        // Check for ONE-TIME Hazards (Spikes / Bullets)
+        foreach (HazardType hazard in hazards)
         {
-            StartCoroutine(HandleBushFail());
+            if (collision.CompareTag(hazard.tag))
+            {
+                // If it's NOT continuous, hit immediately
+                if (!hazard.isContinuous)
+                {
+                    StartCoroutine(HandleOneTimeHit(hazard));
+                }
+                return; 
+            }
+        }
+    }
+
+    // --- 2. STAY TRIGGER (Continuous Damage Logic) ---
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (isDead) return;
+
+        foreach (HazardType hazard in hazards)
+        {
+            // Only check hazards that are marked as CONTINUOUS (e.g., Fire, Poison)
+            if (collision.CompareTag(hazard.tag) && hazard.isContinuous)
+            {
+                // Check if enough time has passed since last hit
+                if (Time.time >= nextDamageTime)
+                {
+                    // Deal damage and reset timer
+                    StartCoroutine(ApplyContinuousTick(hazard));
+                    nextDamageTime = Time.time + hazard.damageInterval;
+                }
+            }
+        }
+    }
+
+    // --- 3. EXIT TRIGGER (Cleanup) ---
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        // Just ensure color is reset when leaving any hazard
+        foreach (HazardType hazard in hazards)
+        {
+            if (collision.CompareTag(hazard.tag))
+            {
+                if (playerSprite != null) playerSprite.color = Color.white;
+            }
+        }
+    }
+
+    // --- LOGIC: ONE TIME HIT ---
+    private IEnumerator HandleOneTimeHit(HazardType hazardData)
+    {
+        isDead = true; 
+
+        PlayHazardSound(hazardData);
+
+        Color originalColor = Color.white;
+        if (playerSprite != null)
+        {
+            originalColor = playerSprite.color;
+            playerSprite.color = hazardData.hitColor; 
         }
 
+        if (health != null) health.DamgerHP(hazardData.damage);
+
+        if (hazardData.respawnPlayer)
+        {
+            // Respawn Sequence
+            if (movementScript != null) movementScript.canMove = false;
+            if (playerRb != null) 
+            {
+                playerRb.linearVelocity = Vector2.zero; 
+                playerRb.simulated = false; 
+            }
+
+            if (failMessageUI != null) failMessageUI.SetActive(true);
+            yield return new WaitForSeconds(failDelay);
+
+            if (playerRoot != null && StartPoint != null)
+                playerRoot.transform.position = StartPoint.position;
+
+            if (failMessageUI != null) failMessageUI.SetActive(false);
+            if (playerRb != null) playerRb.simulated = true; 
+            if (movementScript != null) movementScript.canMove = true;
+        }
+        else
+        {
+            // Just Damage
+            yield return new WaitForSeconds(flashDuration);
+        }
+
+        if (playerSprite != null) playerSprite.color = originalColor;
+        isDead = false; 
     }
-    private IEnumerator HandleBushFail()
-{
-    // 1. Show the fail message
-    if (failMessageUI != null) failMessageUI.SetActive(true);
 
-    // 2. Play the sound immediately
-    if (failSound != null) failSound.Play();
+    // --- LOGIC: CONTINUOUS TICK (Single damage burst) ---
+    private IEnumerator ApplyContinuousTick(HazardType hazardData)
+    {
+        // 1. Deal Damage
+        if (health != null) health.DamgerHP(hazardData.damage);
+        
+        // 2. Play Sound
+        PlayHazardSound(hazardData);
 
-    // 3. Wait for the specified delay
-    yield return new WaitForSeconds(failDelay);
+        // 3. Flash Color ON
+        if (playerSprite != null) playerSprite.color = hazardData.hitColor;
 
-    // 4. Teleport the player and update stats
-    player.transform.position = StartPoint.position;
-    health.DamgerHP(40);
-    failCount += 1;
+        // 4. Wait briefly (flash length)
+        yield return new WaitForSeconds(0.2f); 
 
-    // 5. Hide the message again
-    if (failMessageUI != null) failMessageUI.SetActive(false);
-}
+        // 5. Flash Color OFF
+        if (playerSprite != null) playerSprite.color = Color.white;
+    }
+
+    private void PlayHazardSound(HazardType data)
+    {
+        if (data.hitSound != null) failSound.PlayOneShot(data.hitSound); 
+        else if (failSound != null) failSound.Play();
+    }
 }

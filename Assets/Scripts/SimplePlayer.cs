@@ -23,6 +23,7 @@ public class SimplePlayer : MonoBehaviour
     public float cameraOffsetX = 5f;
     public float cameraSmoothTime = 3f;
     private float targetX;
+    public bool canMove = true;
     private void Start()
     {
         if (mainCam == null)
@@ -36,6 +37,7 @@ public class SimplePlayer : MonoBehaviour
 
     private void Update()
     {
+        if (!canMove) return;
         up = Input.GetAxisRaw("Vertical");
 
         V = Input.GetAxis("Horizontal");
