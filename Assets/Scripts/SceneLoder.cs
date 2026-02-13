@@ -6,6 +6,9 @@ using UnityEngine.UI;
 public class SceneLoader : MonoBehaviour
 {
     [Header("Level Settings")]
+    [Tooltip("If true, the script will load the next scene. If false, it will only fade to black.")]
+    public bool loadNextScene = true; 
+
     [Tooltip("The exact name of the next scene to load.")]
     public string SceneName; 
     
@@ -19,18 +22,15 @@ public class SceneLoader : MonoBehaviour
     [Tooltip("Sound to play immediately when the level ends (Win sound).")]
     public AudioSource finishSound; 
 
-    // Internal flag to prevent triggering the win multiple times
     private bool startLoad = false;
 
     private void Start()
     {
-        // Ensure the fade image is transparent at the start
         if (fadeImage != null)
         {
             fadeImage.canvasRenderer.SetAlpha(0.0f);
         }
 
-        // Hide the "Level Complete" text at the start
         if (NextLevelTitle != null)
         {
             NextLevelTitle.SetActive(false);
@@ -39,79 +39,68 @@ public class SceneLoader : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Check if the object colliding is the Player AND if we haven't already won
         if (other.CompareTag("Player") && !startLoad)
         {
-            startLoad = true; // Lock the logic so it happens only once
-
-            // 1. Immediately freeze the player (Physics & Controls)
+            startLoad = true; 
             FreezePlayer(other.gameObject);
 
-            // 2. Play the Victory Sound
             if (finishSound != null)
             {
                 finishSound.Play();
             }
 
-            // 3. Start the visual transition sequence
-            StartCoroutine(OnNextLevel());
+            StartCoroutine(OnLevelEndSequence());
         }
     }
 
-    // This function stops the player completely
     private void FreezePlayer(GameObject player)
     {
-        // A. Disable the movement script (so keyboard input stops working)
-        SimplePlayer movement = player.GetComponent<SimplePlayer>();
-        if (movement != null)
-        {
-            movement.enabled = false;
-        }
+        // Use your player script reference here
+        // SimplePlayer movement = player.GetComponent<SimplePlayer>();
+        // if (movement != null) movement.enabled = false;
 
-        // B. Stop Physics (so the player doesn't slide or fall)
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
-            // Stop current movement
             rb.linearVelocity = Vector2.zero; 
-            // rb.velocity = Vector2.zero; // Use this if you are on an older Unity version
-            
-            // Disable physics simulation (Freezes player in place)
             rb.simulated = false; 
         }
 
-        // C. (Optional) Stop running animation
         Animator anim = player.GetComponent<Animator>();
         if (anim != null)
         {
-            // Assuming you have a Speed parameter, set it to 0
             anim.SetFloat("Speed", 0); 
-            // anim.SetTrigger("Victory"); // If you have a victory dance, trigger it here!
         }
     }
 
-    private IEnumerator OnNextLevel()
+    private IEnumerator OnLevelEndSequence()
     {
-        Debug.Log("Level Finished! Starting transition...");
+        Debug.Log("Level Sequence Started...");
 
-        // Show "Level Complete" Text
+        // 1. Show Level Complete Title
         if (NextLevelTitle != null)
         {
             NextLevelTitle.SetActive(true);
         }
 
-        // Start fading the screen to black
+        // 2. Fade to black
         if (fadeImage != null)
         {
             fadeImage.canvasRenderer.SetAlpha(0.0f);
-            // Fades alpha from 0 to 1 over 1.5 seconds
             fadeImage.CrossFadeAlpha(1f, 1.5f, true); 
         }
 
-        // Wait for 2 seconds (Let the player hear the music and see the text)
+        // 3. Wait for the fade and sound to be experienced
         yield return new WaitForSeconds(2f);
 
-        // Load the next scene
-        SceneManager.LoadScene(SceneName);
+        // 4. Decision: Load next scene or just stay black
+        if (loadNextScene && !string.IsNullOrEmpty(SceneName))
+        {
+            SceneManager.LoadScene(SceneName);
+        }
+        else
+        {
+            Debug.Log("Fade complete. Staying in current scene as requested.");
+        }
     }
 }
