@@ -5755,7 +5755,7 @@ Transform:
   m_GameObject: {fileID: 914985150}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -115.79, y: 4.74, z: 0}
+  m_LocalPosition: {x: -33.92, y: 4.74, z: 0}
   m_LocalScale: {x: 2.4102, y: 2.6677, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12406,6 +12406,7 @@ MonoBehaviour:
   Raylength: 0.57
   V: 0
   up: 0
+  jumpThreshold: 0.8
   JumpSound: {fileID: 298166368}
   mainCam: {fileID: 0}
   cameraOffsetX: 12.8
