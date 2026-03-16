@@ -16,6 +16,7 @@ public class SimplePlayer : MonoBehaviour
     public float Raylength = 1f;
     public float V;
     public float up;
+    public float jumpThreshold =  0.8f;
     float Timer = 0;
     public AudioSource JumpSound;
     [Header("Camera Settings")]
@@ -23,6 +24,7 @@ public class SimplePlayer : MonoBehaviour
     public float cameraOffsetX = 5f;
     public float cameraSmoothTime = 3f;
     private float targetX;
+    public bool canMove = true;
     private void Start()
     {
         if (mainCam == null)
@@ -36,6 +38,7 @@ public class SimplePlayer : MonoBehaviour
 
     private void Update()
     {
+        if (!canMove) return;
         up = Input.GetAxisRaw("Vertical");
 
         V = Input.GetAxis("Horizontal");
@@ -55,7 +58,7 @@ public class SimplePlayer : MonoBehaviour
         mainCam.transform.localPosition = new UnityEngine.Vector3(newX, camPos.y, camPos.z);
         move = new UnityEngine.Vector2(V, 0);
 
-        if (Input.GetAxisRaw("Vertical") >= 1 && Grounded == true)
+        if (Input.GetAxisRaw("Vertical") >= jumpThreshold && Grounded == true)
         {
             Timer = jumpTime;
             if (JumpSound != null && JumpSound.isPlaying == false)

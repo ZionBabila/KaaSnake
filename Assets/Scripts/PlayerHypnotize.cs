@@ -1,29 +1,101 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI; // Required for the Slider
 using System.Collections;
 
 public class PlayerHypnotize : MonoBehaviour
 {
-    // Global variable accessible from any script via PlayerHypnotize.IsHypnotizing
+    // Global variable accessible from any script
     public static bool IsHypnotizing { get; private set; }
+    
+    private Animator playerAnim;
+    private SimplePlayer playerMovement;
 
     [Header("Detection Settings")]
     public float agroRange = 10f;
     public Transform playerCastPoint;
     public LayerMask detectionLayer;
 
+    [Header("Hypnosis Power (Mana)")]
+    public float currentPower = 0f;      // Current available power
+    public float maxPower = 100f;        // Maximum power limit
+    public float powerCostPerUse = 50f;  // Cost for one full hypnosis action
+
+    [Header("UI References")]
+    public TextMeshProUGUI promptText;   // Text for messages (e.g., "Hold Space...")
+    public Slider powerSlider;           // Reference to the UI Slider
+
     [Header("Audio Settings")]
     public AudioSource hypnotizeSound;
     [Range(0.1f, 3.0f)] public float successFadeDuration = 1.5f; 
     [Range(0.1f, 1.0f)] public float failFadeDuration = 0.2f;
 
-    [Header("UI Reference")]
-    public TextMeshProUGUI promptText;
-
     private float holdTimer = 0f;
     private bool isWaitingForEnemy = false;
     private HypnotizableEntity currentTarget;
     private Coroutine fadeCoroutine;
+
+    void Awake()
+    {
+        playerAnim = GetComponentInParent<Animator>();
+        playerMovement = GetComponent<SimplePlayer>();
+    }
+
+    void Start()
+    {
+        // Initialize the slider at the start of the game
+        if (powerSlider != null)
+        {
+            powerSlider.maxValue = maxPower;
+            powerSlider.value = currentPower;
+            Debug.Log($"[Hypno] Slider Initialized. Max: {maxPower}, Current: {currentPower}");
+        }
+        else
+        {
+            Debug.LogWarning("[Hypno] Power Slider is NOT assigned in the Inspector!");
+        }
+    }
+
+    // --- Function to add power (Called by Golden Apple) ---
+    public void AddHypnoPower(float amount)
+    {
+        Debug.Log($"[Hypno] AddHypnoPower called. Adding: {amount}. Current before: {currentPower}");
+        
+        currentPower += amount;
+        
+        // Clamp the power so it doesn't exceed the maximum
+        if (currentPower > maxPower) currentPower = maxPower;
+
+        UpdatePowerUI(); // Update the visual slider
+
+        // Show a temporary message on screen
+        if(promptText != null) 
+        {
+            promptText.gameObject.SetActive(true);
+            promptText.text = "Power Up!";
+            Invoke("ClearPrompt", 2f);
+        }
+        
+        Debug.Log($"[Hypno] Power Updated. New Value: {currentPower}");
+    }
+    
+    private void ClearPrompt() 
+    { 
+        if(promptText) promptText.gameObject.SetActive(false); 
+    }
+
+    private void UpdatePowerUI()
+    {
+        if (powerSlider != null)
+        {
+            powerSlider.value = currentPower;
+            Debug.Log($"[Hypno] Slider UI updated to: {currentPower}");
+        }
+        else
+        {
+            Debug.LogWarning("[Hypno] Cannot update UI - Slider reference is missing!");
+        }
+    }
 
     void Update()
     {
@@ -44,13 +116,27 @@ public class PlayerHypnotize : MonoBehaviour
         // 2. Main Logic
         if (isLookingAtEnemy && currentTarget != null)
         {
+            // If the enemy is already hypnotized, do nothing
             if (currentTarget.isActionCompleted)
             {
-                promptText.gameObject.SetActive(true);
-                promptText.text = "Target is Hypnotized";
-                IsHypnotizing = false; // Action is already done
+                IsHypnotizing = false; 
                 return;
             }
+
+            // --- Check: Is there enough power? ---
+            if (currentPower < powerCostPerUse)
+            {
+                // If player presses the button without enough power, show error
+                if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0))
+                {
+                    promptText.gameObject.SetActive(true);
+                    promptText.text = "Not enough Power!";
+                    // Optional: Add an error sound here
+                }
+                IsHypnotizing = false;
+                return; 
+            }
+            // --------------------------------
 
             if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.JoystickButton0))
             {
@@ -58,7 +144,7 @@ public class PlayerHypnotize : MonoBehaviour
             }
             else
             {
-                // Released button
+                // Released button mid-action
                 if (holdTimer > 0) StartFade(failFadeDuration);
                 
                 IsHypnotizing = false;
@@ -69,13 +155,18 @@ public class PlayerHypnotize : MonoBehaviour
         }
         else
         {
-            // Looking away
+            // Looking away from enemy
             if (hypnotizeSound.isPlaying && fadeCoroutine == null)
             {
                 StartFade(failFadeDuration);
             }
             IsHypnotizing = false;
             ClearAll();
+        }
+
+        if(playerAnim != null)
+        {
+            playerAnim.SetBool("isHypnotizing", IsHypnotizing);
         }
     }
 
@@ -102,7 +193,7 @@ public class PlayerHypnotize : MonoBehaviour
         if (holdTimer >= currentTarget.requiredTime)
         {
             isWaitingForEnemy = true;
-            IsHypnotizing = false; // Transitioning to success state
+            IsHypnotizing = false; 
             currentTarget.UpdateHypnosisProgress(100f); 
             StartFade(successFadeDuration);
         }
@@ -131,8 +222,12 @@ public class PlayerHypnotize : MonoBehaviour
         
         if (promptText != null) 
         {
-            promptText.text = "";
-            promptText.gameObject.SetActive(false);
+            // Clear text only if it's NOT showing the "Power Up" message
+            if (promptText.text != "Power Up!")
+            {
+                promptText.text = "";
+                promptText.gameObject.SetActive(false);
+            }
         }
     }
 
@@ -141,11 +236,14 @@ public class PlayerHypnotize : MonoBehaviour
         isWaitingForEnemy = false;
         holdTimer = 0f;
         
-        if (promptText != null) 
-        {
-            promptText.gameObject.SetActive(true);
-            promptText.text = "SUCCESS!";
-        }
+        // --- Reduce power after success ---
+        currentPower -= powerCostPerUse;
+        if (currentPower < 0) currentPower = 0;
+        
+        UpdatePowerUI(); // Update the slider visual
+        Debug.Log($"[Hypno] Hypnosis Successful. Power reduced. Current: {currentPower}");
+        // ---------------------------
+
         currentTarget = null;
     }
 
@@ -181,21 +279,58 @@ public class PlayerHypnotize : MonoBehaviour
         fadeCoroutine = null;
     }
 
+    private float lastFacingDir = 1f;
+
     private bool VisualizeAndCheckLine()
     {
         if (playerCastPoint == null) return false;
 
-        Vector2 endPos = (Vector2)playerCastPoint.position + (Vector2)playerCastPoint.right * agroRange;
-        RaycastHit2D hit = Physics2D.Linecast(playerCastPoint.position, endPos, detectionLayer);
-        
-        bool hitEnemy = hit.collider != null && hit.collider.CompareTag("enemy_eye");
-
-        if (hitEnemy)
+        if (playerMovement == null)
         {
-            currentTarget = hit.collider.GetComponentInParent<HypnotizableEntity>();
+            playerMovement = GetComponentInParent<SimplePlayer>();
+            if (playerMovement == null)
+            {
+                Debug.LogError("[Hypno] SimplePlayer script not found on Parent!");
+                return false;
+            }
         }
 
-        Debug.DrawLine(playerCastPoint.position, endPos, hitEnemy ? Color.green : Color.red);
+        if (playerMovement.V > 0.01f) lastFacingDir = 1f;
+        else if (playerMovement.V < -0.01f) lastFacingDir = -1f;
+
+        Vector2 direction = new Vector2(lastFacingDir, 0);
+        
+        RaycastHit2D[] hits = Physics2D.RaycastAll(playerCastPoint.position, direction, agroRange, detectionLayer);
+        
+        bool hitEnemy = false;
+        foreach (var hit in hits)
+        {
+            if (hit.collider.gameObject.transform.root == transform.root) continue;
+
+            if (hit.collider.CompareTag("enemy_eye"))
+            {
+                currentTarget = hit.collider.GetComponentInParent<HypnotizableEntity>();
+                hitEnemy = true;
+                break; 
+            }
+        }
+        
         return hitEnemy;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (playerCastPoint == null) return;
+
+        float dir = (Application.isPlaying) ? lastFacingDir : 1f;
+        Vector3 direction = new Vector3(dir, 0, 0);
+
+        Gizmos.color = Color.yellow;
+        Vector3 startPos = playerCastPoint.position;
+        Vector3 endPos = startPos + (direction * agroRange);
+        Gizmos.DrawLine(startPos, endPos);
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(endPos, 0.2f);
     }
 }

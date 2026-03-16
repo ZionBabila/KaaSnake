@@ -1,10 +1,12 @@
 using UnityEngine;
+using System.Collections; // Required for Coroutines
 
 public class AnimalAI : MonoBehaviour
 {
     [Header("Animator Parameter Names")]
-    public string attackTrigger = "attack";       // Trigger - מתי שהקוף זורק בננה
+    public string attackTrigger = "attack";       
     public string stopAttackTrigger = "stop_attack";
+
     [Header("Detection")]
     public Transform firePoint;
     public LayerMask playerLayer;
@@ -21,6 +23,12 @@ public class AnimalAI : MonoBehaviour
     public float upwardArc = 2f;      // Gives the throw a little "lift"
     private float nextFireTime;
 
+    [Header("Audio Settings")]
+    public AudioClip throwSound;           // The audio file to play
+    [Range(0f, 1f)] public float volume = 1f; 
+    public float soundDelay = 0f;          // Delay in seconds for the sound effect
+    private AudioSource audioSource;
+
     private bool isDisabled = false;
     private Animator anim;
     private Vector2 lastScanDir;      // Remembers where we were looking when we fired
@@ -28,7 +36,18 @@ public class AnimalAI : MonoBehaviour
     [Header("Visual Debug")]
     public bool showScanCone = true;
 
-    void Awake() => anim = GetComponent<Animator>();
+    void Awake() 
+    {
+        anim = GetComponent<Animator>();
+
+        // Initialize AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) 
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false;
+    }
 
     void Update()
     {
@@ -63,12 +82,16 @@ public class AnimalAI : MonoBehaviour
         if (anim != null) anim.SetTrigger(attackTrigger);
     }
 
-    // --- NEW: THE MISSING FUNCTION CALLED BY ANIMATION EVENT ---
+    // Called by Animation Event
     public void ExecuteThrowEvent()
     {
-        if (projectilePrefab == null || firePoint == null) return;
+        // Trigger sound with delay
+        if (throwSound != null)
+        {
+            StartCoroutine(PlaySoundWithDelay(soundDelay));
+        }
 
-        Debug.Log(gameObject.name + " is throwing a projectile!");
+        if (projectilePrefab == null || firePoint == null) return;
 
         // 1. Create the projectile
         GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
@@ -77,7 +100,7 @@ public class AnimalAI : MonoBehaviour
         Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
-            // We use the last direction we were scanning at
+            // Use the last direction we were scanning at
             Vector2 finalThrowForce = new Vector2(lastScanDir.x * throwForce, (lastScanDir.y * throwForce) + upwardArc);
             rb.AddForce(finalThrowForce, ForceMode2D.Impulse);
 
@@ -86,10 +109,19 @@ public class AnimalAI : MonoBehaviour
         }
     }
 
+    private IEnumerator PlaySoundWithDelay(float delay)
+    {
+        if (delay > 0)
+            yield return new WaitForSeconds(delay);
+        
+        // PlayOneShot allows multiple sounds to overlap without cutting off
+        audioSource.PlayOneShot(throwSound, volume);
+    }
+
     public void DisableAI()
     {
         isDisabled = true;
-        if (anim != null) anim.SetTrigger(stopAttackTrigger); // Optional: clear any attack triggers
+        if (anim != null) anim.SetTrigger(stopAttackTrigger);
         Debug.Log(gameObject.name + " AI Disabled");
     }
 
