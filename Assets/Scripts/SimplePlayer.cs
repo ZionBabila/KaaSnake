@@ -1,13 +1,16 @@
+// using System.Numerics;
 using System.Numerics;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Vector2 = UnityEngine.Vector2;
 
 public class SimplePlayer : MonoBehaviour
 {
     public Rigidbody2D rb;
     public float speed = 1f;
     public PlayerDetect detect;
-    public UnityEngine.Vector2 move;
+    public UnityEngine.Vector2 move1;
     public UnityEngine.Vector2 jump;
     public bool Grounded = false;
     public float jumpTime = 0.5f;
@@ -25,6 +28,9 @@ public class SimplePlayer : MonoBehaviour
     public float cameraSmoothTime = 3f;
     private float targetX;
     public bool canMove = true;
+    public InputAction MoveAction;
+    public InputAction Jump;
+
     private void Start()
     {
         if (mainCam == null)
@@ -34,10 +40,16 @@ public class SimplePlayer : MonoBehaviour
         targetX = cameraOffsetX;
         rb = GetComponent<Rigidbody2D>();
         detect = GetComponentInChildren<PlayerDetect>();
+        MoveAction.Enable();
+        Jump.Enable();
     }
 
     private void Update()
     {
+        Vector2 move = MoveAction.ReadValue<Vector2>();
+        Vector2 position1 = (Vector2)transform.position + move * 0.1f;
+        Debug.Log(position1);
+
         if (!canMove) return;
         up = Input.GetAxisRaw("Vertical");
 
@@ -79,7 +91,7 @@ public class SimplePlayer : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        rb.AddForce(move * speed + jump, ForceMode2D.Force);
+        rb.AddForce(move1 * speed + jump, ForceMode2D.Force);
     }
     public void GroundCheck()
     {
