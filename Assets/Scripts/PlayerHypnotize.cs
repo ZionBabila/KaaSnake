@@ -7,7 +7,7 @@ public class PlayerHypnotize : MonoBehaviour
 {
     // Global variable accessible from any script
     public static bool IsHypnotizing { get; private set; }
-    
+
     private Animator playerAnim;
     private SimplePlayer playerMovement;
 
@@ -27,7 +27,7 @@ public class PlayerHypnotize : MonoBehaviour
 
     [Header("Audio Settings")]
     public AudioSource hypnotizeSound;
-    [Range(0.1f, 3.0f)] public float successFadeDuration = 1.5f; 
+    [Range(0.1f, 3.0f)] public float successFadeDuration = 1.5f;
     [Range(0.1f, 1.0f)] public float failFadeDuration = 0.2f;
 
     private float holdTimer = 0f;
@@ -60,28 +60,28 @@ public class PlayerHypnotize : MonoBehaviour
     public void AddHypnoPower(float amount)
     {
         Debug.Log($"[Hypno] AddHypnoPower called. Adding: {amount}. Current before: {currentPower}");
-        
+
         currentPower += amount;
-        
+
         // Clamp the power so it doesn't exceed the maximum
         if (currentPower > maxPower) currentPower = maxPower;
 
         UpdatePowerUI(); // Update the visual slider
 
         // Show a temporary message on screen
-        if(promptText != null) 
+        if (promptText != null)
         {
             promptText.gameObject.SetActive(true);
             promptText.text = "Power Up!";
             Invoke("ClearPrompt", 2f);
         }
-        
+
         Debug.Log($"[Hypno] Power Updated. New Value: {currentPower}");
     }
-    
-    private void ClearPrompt() 
-    { 
-        if(promptText) promptText.gameObject.SetActive(false); 
+
+    private void ClearPrompt()
+    {
+        if (promptText) promptText.gameObject.SetActive(false);
     }
 
     private void UpdatePowerUI()
@@ -119,7 +119,7 @@ public class PlayerHypnotize : MonoBehaviour
             // If the enemy is already hypnotized, do nothing
             if (currentTarget.isActionCompleted)
             {
-                IsHypnotizing = false; 
+                IsHypnotizing = false;
                 return;
             }
 
@@ -127,18 +127,18 @@ public class PlayerHypnotize : MonoBehaviour
             if (currentPower < powerCostPerUse)
             {
                 // If player presses the button without enough power, show error
-                if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0))
+                if (playerMovement.HypnotizeAction.WasPressedThisFrame())
                 {
                     promptText.gameObject.SetActive(true);
                     promptText.text = "Not enough Power!";
                     // Optional: Add an error sound here
                 }
                 IsHypnotizing = false;
-                return; 
+                return;
             }
             // --------------------------------
 
-            if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.JoystickButton0))
+            if (playerMovement.HypnotizeAction.IsPressed())
             {
                 ExecuteHypnosis();
             }
@@ -146,11 +146,11 @@ public class PlayerHypnotize : MonoBehaviour
             {
                 // Released button mid-action
                 if (holdTimer > 0) StartFade(failFadeDuration);
-                
+
                 IsHypnotizing = false;
                 promptText.gameObject.SetActive(true);
                 promptText.text = "Hold SPACE to Hypnotize";
-                ResetHypnosisState(); 
+                ResetHypnosisState();
             }
         }
         else
@@ -164,7 +164,7 @@ public class PlayerHypnotize : MonoBehaviour
             ClearAll();
         }
 
-        if(playerAnim != null)
+        if (playerAnim != null)
         {
             playerAnim.SetBool("isHypnotizing", IsHypnotizing);
         }
@@ -184,17 +184,17 @@ public class PlayerHypnotize : MonoBehaviour
 
         holdTimer += Time.deltaTime;
         float progress = (holdTimer / currentTarget.requiredTime) * 100f;
-        
+
         promptText.gameObject.SetActive(true);
         promptText.text = $"Hypnotizing... {Mathf.Min(progress, 100f):0}%";
-        
+
         currentTarget.UpdateHypnosisProgress(progress);
 
         if (holdTimer >= currentTarget.requiredTime)
         {
             isWaitingForEnemy = true;
-            IsHypnotizing = false; 
-            currentTarget.UpdateHypnosisProgress(100f); 
+            IsHypnotizing = false;
+            currentTarget.UpdateHypnosisProgress(100f);
             StartFade(successFadeDuration);
         }
     }
@@ -202,7 +202,7 @@ public class PlayerHypnotize : MonoBehaviour
     private void ResetHypnosisState()
     {
         holdTimer = 0f;
-        if (currentTarget != null && !isWaitingForEnemy) 
+        if (currentTarget != null && !isWaitingForEnemy)
         {
             currentTarget.UpdateHypnosisProgress(0);
         }
@@ -210,17 +210,17 @@ public class PlayerHypnotize : MonoBehaviour
 
     private void ClearAll()
     {
-        if (!isWaitingForEnemy) 
+        if (!isWaitingForEnemy)
         {
-            if(currentTarget != null)
+            if (currentTarget != null)
             {
                 currentTarget.UpdateHypnosisProgress(0);
             }
             holdTimer = 0f;
             currentTarget = null;
         }
-        
-        if (promptText != null) 
+
+        if (promptText != null)
         {
             // Clear text only if it's NOT showing the "Power Up" message
             if (promptText.text != "Power Up!")
@@ -235,11 +235,11 @@ public class PlayerHypnotize : MonoBehaviour
     {
         isWaitingForEnemy = false;
         holdTimer = 0f;
-        
+
         // --- Reduce power after success ---
         currentPower -= powerCostPerUse;
         if (currentPower < 0) currentPower = 0;
-        
+
         UpdatePowerUI(); // Update the slider visual
         Debug.Log($"[Hypno] Hypnosis Successful. Power reduced. Current: {currentPower}");
         // ---------------------------
@@ -275,7 +275,7 @@ public class PlayerHypnotize : MonoBehaviour
         }
 
         hypnotizeSound.Stop();
-        hypnotizeSound.volume = 1f; 
+        hypnotizeSound.volume = 1f;
         fadeCoroutine = null;
     }
 
@@ -295,13 +295,13 @@ public class PlayerHypnotize : MonoBehaviour
             }
         }
 
-        if (playerMovement.V > 0.01f) lastFacingDir = 1f;
-        else if (playerMovement.V < -0.01f) lastFacingDir = -1f;
+        if (playerMovement.verticalMove > 0.01f) lastFacingDir = 1f;
+        else if (playerMovement.verticalMove < -0.01f) lastFacingDir = -1f;
 
         Vector2 direction = new Vector2(lastFacingDir, 0);
-        
+
         RaycastHit2D[] hits = Physics2D.RaycastAll(playerCastPoint.position, direction, agroRange, detectionLayer);
-        
+
         bool hitEnemy = false;
         foreach (var hit in hits)
         {
@@ -311,10 +311,10 @@ public class PlayerHypnotize : MonoBehaviour
             {
                 currentTarget = hit.collider.GetComponentInParent<HypnotizableEntity>();
                 hitEnemy = true;
-                break; 
+                break;
             }
         }
-        
+
         return hitEnemy;
     }
 

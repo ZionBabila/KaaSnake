@@ -4538,6 +4538,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 78614774900356025, guid: 141a04da3de04424caeaaf3e12c860e5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.19071901
+      objectReference: {fileID: 0}
+    - target: {fileID: 78614774900356025, guid: 141a04da3de04424caeaaf3e12c860e5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.46147782
+      objectReference: {fileID: 0}
+    - target: {fileID: 4161890344169041984, guid: 141a04da3de04424caeaaf3e12c860e5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.9597121
+      objectReference: {fileID: 0}
+    - target: {fileID: 4161890344169041984, guid: 141a04da3de04424caeaaf3e12c860e5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.63770384
+      objectReference: {fileID: 0}
     - target: {fileID: 5263425011474461853, guid: 141a04da3de04424caeaaf3e12c860e5, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.30121157
@@ -12766,69 +12782,97 @@ MonoBehaviour:
   rb: {fileID: 2094412039}
   speed: 15
   detect: {fileID: 0}
-  move1: {x: 0, y: 0}
+  move: {x: 0, y: 0}
   jump: {x: 0, y: 0}
   Grounded: 0
   jumpTime: 0.2
   jumpForce: 40
   radius: 0.56
   Raylength: 0.57
-  V: 0
-  up: 0
   jumpThreshold: 0.8
+  verticalMove: 0
   JumpSound: {fileID: 298166368}
-  mainCam: {fileID: 0}
-  cameraOffsetX: 12.8
-  cameraSmoothTime: 0.35
-  canMove: 1
   MoveAction:
     m_Name: Move
     m_Type: 0
     m_ExpectedControlType: 
     m_Id: fc398d01-b0c2-4f7c-b93f-183aeb31e0a8
-    m_Processors: 
+    m_Processors: AxisDeadzone
     m_Interactions: 
     m_SingletonActionBindings:
-    - m_Name: 2D Vector
-      m_Id: a1b4afef-a453-44b7-a9b6-37ff4f1d7bc0
-      m_Path: 2DVector
+    - m_Name: 1D Axis
+      m_Id: e345f32d-8053-4c62-ace5-6f66b31c69f8
+      m_Path: 1DAxis
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Move
       m_Flags: 4
-    - m_Name: up
-      m_Id: d8604617-944b-4068-be8e-563eed9c4140
-      m_Path: <XInputController>/leftStick/up
+    - m_Name: negative
+      m_Id: 3b420e72-bdb9-476a-9024-bcbd2da6990d
+      m_Path: <Keyboard>/leftArrow
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Move
       m_Flags: 8
-    - m_Name: down
-      m_Id: 16d1614c-ed1a-40f5-8473-94b35f383444
-      m_Path: <XInputController>/leftStick/down
+    - m_Name: positive
+      m_Id: daf924a2-9639-4335-bd16-7e20090abda4
+      m_Path: <Keyboard>/rightArrow
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Move
       m_Flags: 8
-    - m_Name: left
-      m_Id: 029a2bd1-bad9-4089-ad66-aa9d5a97b17a
-      m_Path: <XInputController>/leftStick/left
+    - m_Name: 1D Axis
+      m_Id: e02078bb-8384-4170-a9de-fb4ec122a073
+      m_Path: 1DAxis
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Move
+      m_Flags: 4
+    - m_Name: negative
+      m_Id: 736f7268-e86a-4548-8f73-2d0487a8745c
+      m_Path: <Gamepad>/leftStick/left
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Move
       m_Flags: 8
-    - m_Name: right
-      m_Id: b70e3491-1c42-4c79-875f-2105853f7485
-      m_Path: <XInputController>/leftStick/right
+    - m_Name: positive
+      m_Id: 2d0e8bbb-ca88-47c7-9da1-d7f0a580c245
+      m_Path: <Gamepad>/leftStick/right
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Move
       m_Flags: 8
+    m_Flags: 0
+  HypnotizeAction:
+    m_Name: Hypnotize
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 881cecea-0e20-4be2-8d93-6fccde8140eb
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: d5e76da1-56ce-4204-a73c-e5dd93d94d9d
+      m_Path: <Gamepad>/buttonEast
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Hypnotize
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 83f82fa8-d6c9-4b6b-b323-65a9a7318cb7
+      m_Path: <Keyboard>/space
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Hypnotize
+      m_Flags: 0
     m_Flags: 0
   Jump:
     m_Name: Jump
@@ -12836,17 +12880,26 @@ MonoBehaviour:
     m_ExpectedControlType: Button
     m_Id: 49c478c2-358c-4cc4-b462-ac4a4fb725ee
     m_Processors: 
-    m_Interactions: 
+    m_Interactions: Press(pressPoint=0.8)
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: 9b2e07e9-792d-4992-b78b-d57137292f8e
-      m_Path: <XInputController>/buttonSouth
+      m_Path: <Gamepad>/leftStick/up
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Jump
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 7e4b1a77-72d8-4ca1-ad9e-bb0a3dc80b2d
+      m_Path: <Keyboard>/upArrow
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Jump
       m_Flags: 0
     m_Flags: 0
+  canMove: 1
 --- !u!50 &2094412039
 Rigidbody2D:
   serializedVersion: 5

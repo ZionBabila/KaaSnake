@@ -22,15 +22,15 @@ public float up =0;
     {
         speed = Mathf.Abs(rb.linearVelocity.x);
         animator.SetFloat("speed", speed);
-        up = simplePlayer.up;
+        up = rb.linearVelocityY;
         animator.SetFloat("up", up);
         if (speed > 0.1f)
         {
-            if (simplePlayer.V > 0)
+            if (simplePlayer.verticalMove > 0)
             {
                 spriteRenderer.flipX = false;
             }
-            if (simplePlayer.V < 0)
+            if (simplePlayer.verticalMove < 0)
             {
                 spriteRenderer.flipX = true;
             }
