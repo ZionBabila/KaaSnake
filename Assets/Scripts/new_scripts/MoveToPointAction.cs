@@ -9,18 +9,20 @@ public class MoveToPointAction : MonoBehaviour
     public string moveAnimBool = "isMoving";
 
     [Header("Return Logic (Optional)")]
-    public bool returnAfterAction = false; 
-    public float waitAtTarget = 1.0f; 
+    public bool returnAfterAction = false;
+    public float waitAtTarget = 1.0f;
     private Vector3 startPosition;
     private bool isReturning = false;
-
+    [Header("Hypnosis Control")]
+    public string hypnoBool = "isFullyHypnotized"; // Name of the Bool parameter in Animator that indicates hypnosis completion 
+    public bool restoreHypnosisiOnFinish = true; // Should we reset the hypnosis state when starting to move?
     [Header("Actions to do at Destination")]
     public UnityEvent OnReachedDestination;
 
     private bool shouldMove = false;
     private Animator anim;
 
-    void Awake() 
+    void Awake()
     {
         anim = GetComponent<Animator>();
         startPosition = transform.position;
@@ -44,25 +46,30 @@ public class MoveToPointAction : MonoBehaviour
     {
         isReturning = false;
         shouldMove = true;
-        
-        if (anim != null) 
+
+        if (anim != null)
         {
             anim.SetBool(moveAnimBool, true);
-            // RESET: וודא שההיפנוזה מתאפסת כדי שהאנימטור לא יתקע
-            anim.SetBool("isFullyHypnotized", false); 
+            // RESET HYPNOSIS STATE IF NEEDED
+            anim.SetBool(hypnoBool, false);
         }
     }
 
     private void ReachedTarget()
     {
         shouldMove = false;
-        
+
         // התיקון הקריטי: מכבים את האנימציה רק אם האובייקט לא אמור לחזור (כמו הקוף)
-        if (!returnAfterAction && anim != null) 
+        if (!returnAfterAction && anim != null)
         {
             anim.SetBool(moveAnimBool, false);
+            // insepctor returns null for some reason, so we added a public reference to the hypnosis bool in the inspector.
+            if (restoreHypnosisiOnFinish)
+            {
+                anim.SetBool(hypnoBool, true);
+            }
         }
-        
+
         transform.position = targetPoint.position;
 
         if (OnReachedDestination != null) OnReachedDestination.Invoke();
@@ -78,14 +85,27 @@ public class MoveToPointAction : MonoBehaviour
         isReturning = true;
         shouldMove = true;
         // מדליקים שוב ליתר ביטחון (אם waitAtTarget היה גדול מ-0)
-        if (anim != null) anim.SetBool(moveAnimBool, true);
+        if (anim != null)
+        {
+            // start returning animation if needed (optional, can be the same as moving)
+            anim.SetBool(moveAnimBool, true);
+            // 
+            anim.SetBool(hypnoBool, false); // Reset hypnosis state when starting to return as well (optional, depends on your design)
+        }
     }
 
     private void ReachedHome()
     {
         shouldMove = false;
         // כאן אנחנו תמיד מכבים את האנימציה כי התנועה נגמרה סופית
-        if (anim != null) anim.SetBool(moveAnimBool, false);
+        if (anim != null) 
+        {
+            anim.SetBool(moveAnimBool, false);
+            if (restoreHypnosisiOnFinish)
+            {
+                anim.SetBool(hypnoBool, true);
+            }
+        }
         transform.position = startPosition;
         Debug.Log(gameObject.name + " returned home.");
     }

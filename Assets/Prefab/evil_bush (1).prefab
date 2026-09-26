@@ -12,10 +12,10 @@ GameObject:
   - component: {fileID: 8018775297787225386}
   - component: {fileID: 6082941620839460301}
   - component: {fileID: 5709004515357403171}
-  - component: {fileID: 7857326986183405674}
   - component: {fileID: 829048728974349710}
   - component: {fileID: 800020055544299817}
   - component: {fileID: 8544246096980133111}
+  - component: {fileID: 2501615835184968963}
   m_Layer: 0
   m_Name: evil_bush (1)
   m_TagString: bush
@@ -31,7 +31,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1342191558523250942}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -33.16, y: -3.04, z: 0}
   m_LocalScale: {x: 1.1, y: 1.1, z: 1.1}
   m_ConstrainProportionsScale: 1
@@ -143,52 +143,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &7857326986183405674
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1342191558523250942}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.15958214}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.61, y: 2.22}
-    newSize: {x: 2.61, y: 2.22}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 2.61, y: 1.900836}
-  m_EdgeRadius: 0
 --- !u!114 &829048728974349710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,10 +175,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entityName: evilBush1
-  requiredTime: 1.3
+  requiredTime: 2.5
   isActionCompleted: 0
+  isRepeatable: 0
+  recoveryTime: 5
   tryingBool: isHypnoProcess
   completedBool: isFullyHypnotized
+  changeFactionOnHypnosis: 0
+  neutralLayerName: Default
+  neutralTagName: Untagged
   OnHypnosisSuccess:
     m_PersistentCalls:
       m_Calls:
@@ -240,6 +199,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  OnRecovery:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &8544246096980133111
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,14 +214,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f101d4db3a2fb8648aff5f2e83a7acd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 2
-  patrolDistance: 3.7
+  moveSpeed: 1.9
+  patrolDistance: 5.76
   moveRightFirst: 1
-  useFloating: 1
-  floatAmplitude: 0.15
+  useFloating: 0
+  floatAmplitude: -0.59
   floatSpeed: 1.97
   hypnosisSystem: {fileID: 800020055544299817}
   showGizmos: 1
+--- !u!58 &2501615835184968963
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1342191558523250942}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: -0.24}
+  m_Radius: 1.33
 --- !u!1 &1635960366525756415
 GameObject:
   m_ObjectHideFlags: 0
@@ -326,7 +324,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.040159017}
+  m_Offset: {x: 0, y: -0.056990474}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -336,5 +334,5 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 0.57546276}
+  m_Size: {x: 1, y: 1.1443202}
   m_EdgeRadius: 0

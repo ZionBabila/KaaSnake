@@ -1,6 +1,7 @@
-using System.Numerics;
-using Unity.VisualScripting;
+// using System.Numerics;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Vector2 = UnityEngine.Vector2;
 
 public class SimplePlayer : MonoBehaviour
 {
@@ -14,69 +15,59 @@ public class SimplePlayer : MonoBehaviour
     public float jumpForce = 100f;
     public float radius = 1f;
     public float Raylength = 1f;
-    public float V;
-    public float up;
+    public float jumpThreshold =  0.8f;
+    public float verticalMove = 0;
     float Timer = 0;
     public AudioSource JumpSound;
-    [Header("Camera Settings")]
-    public Camera mainCam;
-    public float cameraOffsetX = 5f;
-    public float cameraSmoothTime = 3f;
-    private float targetX;
+    public InputAction MoveAction;
+    public InputAction HypnotizeAction;
+    public InputAction Jump;
+public bool canMove = true;
     private void Start()
     {
-        if (mainCam == null)
-        {
-            mainCam = GetComponentInChildren<Camera>();
-        }
-        targetX = cameraOffsetX;
+        
         rb = GetComponent<Rigidbody2D>();
         detect = GetComponentInChildren<PlayerDetect>();
+        MoveAction.Enable();
+        Jump.Enable();
+        HypnotizeAction.Enable();
     }
 
-    private void Update()
+ private void Update()
+{
+    GroundCheck();
+
+    if (!canMove)
     {
-        up = Input.GetAxisRaw("Vertical");
-
-        V = Input.GetAxis("Horizontal");
-        //loat H = Input.GetAxis("Vertical");
-
-        // 1. Decide target side
-        if (V > 0) targetX = cameraOffsetX;
-        else if (V < 0) targetX = -cameraOffsetX;
-
-        // 2. Get current local position using the Unity specific Vector3
-        UnityEngine.Vector3 camPos = mainCam.transform.localPosition;
-
-        // 3. Smooth the X movement
-        float newX = Mathf.Lerp(camPos.x, targetX, Time.deltaTime * cameraSmoothTime);
-
-        // 4. Apply back to the camera using the Unity specific Vector3
-        mainCam.transform.localPosition = new UnityEngine.Vector3(newX, camPos.y, camPos.z);
-        move = new UnityEngine.Vector2(V, 0);
-
-        if (Input.GetAxisRaw("Vertical") >= 1 && Grounded == true)
-        {
-            Timer = jumpTime;
-            if (JumpSound != null && JumpSound.isPlaying == false)
-            {
-                JumpSound.Play();
-            }
-        }
-        if (Timer > 0)
-        {
-            jump = new UnityEngine.Vector2(0, 1 * jumpForce);
-            Timer = Timer - Time.deltaTime;
-        }
-        else
-        {
-            jump = UnityEngine.Vector2.zero;
-        }
-        GroundCheck();
+        verticalMove = 0;
+        jump = Vector2.zero;
+        Timer = 0;
+        return;
     }
+
+    verticalMove = MoveAction.ReadValue<float>();
+
+    if (Jump.WasPressedThisFrame() && Grounded)
+    {
+        Timer = jumpTime;
+        if (JumpSound != null && JumpSound.isPlaying == false)
+        {
+            JumpSound.Play();
+        }
+    }
+    if (Timer > 0)
+    {
+        jump = new Vector2(0, 1 * jumpForce);
+        Timer = Timer - Time.deltaTime;
+    }
+    else
+    {
+        jump = Vector2.zero;
+    }
+}
     private void FixedUpdate()
     {
-        rb.AddForce(move * speed + jump, ForceMode2D.Force);
+        rb.AddForce(new Vector2(verticalMove * speed, 0) + jump, ForceMode2D.Force);
     }
     public void GroundCheck()
     {

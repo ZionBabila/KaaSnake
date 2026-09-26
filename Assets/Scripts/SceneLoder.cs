@@ -3,51 +3,104 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class SceneLoder : MonoBehaviour
+public class SceneLoader : MonoBehaviour
 {
-    public string SceneName;
-    public GameObject NextLevelTitel;
-    public bool StartLoad = false;
+    [Header("Level Settings")]
+    [Tooltip("If true, the script will load the next scene. If false, it will only fade to black.")]
+    public bool loadNextScene = true; 
+
+    [Tooltip("The exact name of the next scene to load.")]
+    public string SceneName; 
+    
+    [Tooltip("UI Object (Text/Image) that says 'Level Complete' or similar.")]
+    public GameObject NextLevelTitle; 
+    
+    [Tooltip("Black Image used for fading the screen out.")]
     public Image fadeImage;
+
+    [Header("Audio")]
+    [Tooltip("Sound to play immediately when the level ends (Win sound).")]
+    public AudioSource finishSound; 
+
+    private bool startLoad = false;
+
     private void Start()
     {
-        fadeImage.canvasRenderer.SetAlpha(0.0f);
-        if (NextLevelTitel != null)
+        if (fadeImage != null)
         {
-            NextLevelTitel.SetActive(false);
+            fadeImage.canvasRenderer.SetAlpha(0.0f);
         }
 
+        if (NextLevelTitle != null)
+        {
+            NextLevelTitle.SetActive(false);
+        }
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player") && !StartLoad)
+        if (other.CompareTag("Player") && !startLoad)
         {
+            startLoad = true; 
+            FreezePlayer(other.gameObject);
 
-            LoadScene();
-            StartLoad = true;
+            if (finishSound != null)
+            {
+                finishSound.Play();
+            }
+
+            StartCoroutine(OnLevelEndSequence());
         }
     }
-    public void LoadScene()
+
+    private void FreezePlayer(GameObject player)
     {
+        // Use your player script reference here
+        // SimplePlayer movement = player.GetComponent<SimplePlayer>();
+        // if (movement != null) movement.enabled = false;
 
+        Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero; 
+            rb.simulated = false; 
+        }
 
-        StartCoroutine(OnNextLevel());
-
+        Animator anim = player.GetComponent<Animator>();
+        if (anim != null)
+        {
+            anim.SetFloat("Speed", 0); 
+        }
     }
-    private IEnumerator OnNextLevel()
+
+    private IEnumerator OnLevelEndSequence()
     {
+        Debug.Log("Level Sequence Started...");
 
-        Debug.Log("coroutine started");
-        NextLevelTitel.SetActive(true);
-        fadeImage.canvasRenderer.SetAlpha(0.01f);
-        fadeImage.CrossFadeAlpha(1f, 2.0f, true);
+        // 1. Show Level Complete Title
+        if (NextLevelTitle != null)
+        {
+            NextLevelTitle.SetActive(true);
+        }
+
+        // 2. Fade to black
+        if (fadeImage != null)
+        {
+            fadeImage.canvasRenderer.SetAlpha(0.0f);
+            fadeImage.CrossFadeAlpha(1f, 1.5f, true); 
+        }
+
+        // 3. Wait for the fade and sound to be experienced
         yield return new WaitForSeconds(2f);
-        SceneManager.LoadScene(SceneName);
-        fadeImage.canvasRenderer.SetAlpha(1f);
-        fadeImage.CrossFadeAlpha(0f, 2.0f, true);
 
-        yield break;
+        // 4. Decision: Load next scene or just stay black
+        if (loadNextScene && !string.IsNullOrEmpty(SceneName))
+        {
+            SceneManager.LoadScene(SceneName);
+        }
+        else
+        {
+            Debug.Log("Fade complete. Staying in current scene as requested.");
+        }
     }
 }
-

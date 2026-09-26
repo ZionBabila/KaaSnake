@@ -10,6 +10,9 @@ TagManager:
   - bush
   - enemy_eye
   - Ground
+  - smallHit
+  - bigHit
+  - goldApple
   layers:
   - Default
   - TransparentFX
@@ -49,6 +52,9 @@ TagManager:
     locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: light
+    uniqueID: 2778812039
     locked: 0
   m_RenderingLayers:
   - Default
