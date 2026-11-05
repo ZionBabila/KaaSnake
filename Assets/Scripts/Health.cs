@@ -19,8 +19,16 @@ public class Health : MonoBehaviour
     public AudioSource heat;
     private void Start()
     {
-        PlayerHPslider.maxValue = MaxHP;
-        FailTitle.SetActive(false);
+        if (PlayerHPslider != null)
+        {
+            PlayerHPslider.maxValue = MaxHP;
+        }
+        if (FailTitle != null)
+        {
+            FailTitle.SetActive(false);
+
+        }
+
 
     }
     public void DamgerHP(int damage)

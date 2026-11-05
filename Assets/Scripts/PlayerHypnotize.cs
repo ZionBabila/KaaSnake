@@ -102,6 +102,10 @@ public class PlayerHypnotize : MonoBehaviour
         if (promptText == null) return;
 
         bool isLookingAtEnemy = VisualizeAndCheckLine();
+        if (playerAnim != null)
+        {
+            playerAnim.SetBool("isHypnotizing", IsHypnotizing);
+        }
 
         // 1. Success transition state
         if (isWaitingForEnemy)
@@ -162,11 +166,6 @@ public class PlayerHypnotize : MonoBehaviour
             }
             IsHypnotizing = false;
             ClearAll();
-        }
-
-        if (playerAnim != null)
-        {
-            playerAnim.SetBool("isHypnotizing", IsHypnotizing);
         }
     }
 

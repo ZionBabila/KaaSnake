@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class Menu : MonoBehaviour
 {
     [Header("Settings")]
@@ -7,9 +7,10 @@ public class Menu : MonoBehaviour
 
     [Header("Reference")]
     public GameObject MenuCanvas;
-
+public GameObject pauseUi;
     private void Start()
     {
+
         if (openOnStart)
         {
             OpenMenu();
@@ -18,6 +19,26 @@ public class Menu : MonoBehaviour
         {
             CloseMenu();
         }
+    }
+
+    public void OnRestartPress()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void OnGameResumePress()
+    {
+ pauseUi.SetActive(false);
+    }
+
+    public void OnEnterPausePress()
+    {
+        pauseUi.SetActive(true);
+    }
+
+    public void OnGameExitPress()
+    {
+Application.Quit();
     }
     public void OpenMenu()
     {
