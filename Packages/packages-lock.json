@@ -7,9 +7,9 @@
       "dependencies": {}
     },
     "com.judahperez.hsvcolorpicker": {
-      "version": "file:C:/Users/babil/Downloads/HSV-Color-Picker-Unity-3.3.0/HSV-Color-Picker-Unity-3.3.0/Packages/com.judahperez.hsvcolorpicker",
+      "version": "file:com.judahperez.hsvcolorpicker",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {}
     },
     "com.unity.2d.animation": {

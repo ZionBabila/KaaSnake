@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "com.3dconnexion.3dxunity3d": "file:C:/Users/babil/Documents/My Games/3DxUnity3D/src",
-    "com.judahperez.hsvcolorpicker": "file:C:/Users/babil/Downloads/HSV-Color-Picker-Unity-3.3.0/HSV-Color-Picker-Unity-3.3.0/Packages/com.judahperez.hsvcolorpicker",
     "com.unity.collab-proxy": "2.11.4",
     "com.unity.feature.2d": "2.0.2",
     "com.unity.ide.rider": "3.0.39",
